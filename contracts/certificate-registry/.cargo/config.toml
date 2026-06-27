@@ -1,0 +1,19 @@
+# Klever VM wasm build — linker workaround.
+#
+# Rust 1.82+ stopped auto-importing *undefined* symbols in wasm builds. The
+# Klever VM host functions (mBufferNew, signalError, mBufferStorageStore, ...)
+# are declared by `klever-sc-wasm-adapter` as undefined `extern "C"` functions
+# that the VM provides at runtime. Without the flag below, `ksc all build`
+# (and `cargo build --target wasm32*`) fails to link with:
+#   rust-lld: error: ... undefined symbol: mBufferNew
+#
+# `--import-undefined` tells the linker to emit those undefined symbols as wasm
+# imports (the old behavior), which is exactly what the Klever VM expects.
+#
+# Scope is limited to the wasm targets, so host builds (tests, the meta crate)
+# are unaffected. Remove this once a klever-sc version handles it natively.
+[target.wasm32v1-none]
+rustflags = ["-C", "link-arg=--import-undefined"]
+
+[target.wasm32-unknown-unknown]
+rustflags = ["-C", "link-arg=--import-undefined"]

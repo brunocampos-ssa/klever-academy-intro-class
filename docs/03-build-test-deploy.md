@@ -28,6 +28,29 @@ Output lands in `contracts/certificate-registry/output/`:
 > ❌ Do not use `sc-meta all build`, `cargo build`, or `mxpy` — those belong to
 > other ecosystems. Klever builds with `ksc`.
 
+### Build requirements & the wasm-link note
+
+Two things the build needs, and one rough edge worth knowing:
+
+1. **`ksc` discovers the contract via a `klever.json` marker** in the contract
+   folder (`contracts/certificate-registry/klever.json`). Without it, `ksc all
+   build` prints *"Found 0 contract crates"* and silently does nothing — the
+   marker is what makes the folder a buildable contract.
+2. **A Rust wasm target must be installed** — set up once in
+   [`01-setup.md`](01-setup.md) (section 3, "Add the WebAssembly build target").
+3. **On Rust 1.82+**, `ksc`'s own wasm link can fail with
+   `undefined symbol: mBufferNew` (Rust stopped auto-importing undefined wasm
+   symbols, and the installed `ksc` doesn't pass `--import-undefined`).
+   `build.sh` **detects this and automatically relinks** the generated `wasm/`
+   crate with the right flag — kept in
+   `contracts/certificate-registry/.cargo/config.toml` — so you still get a
+   deployable `output/certificate-registry.wasm`. The clean long-term fix is to
+   update the Klever SDK from https://install.klever.org once a release handles
+   this natively.
+
+> `build.sh` never reports a false success: if no `.wasm` is produced (even via
+> the fallback), it exits with an error instead of printing "Build complete".
+
 ---
 
 ## Test
