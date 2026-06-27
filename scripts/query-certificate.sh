@@ -17,12 +17,19 @@
 
 set -euo pipefail
 
-# --- Configuration -----------------------------------------------------------
+# Shared helpers + load config from .env (CONTRACT_ADDRESS, API_URL, ...).
+. "$(dirname "${BASH_SOURCE[0]}")/_common.sh"
+load_dotenv
+
+# --- Configuration (from .env above, or environment, or these defaults) ------
 # API base for queries (note: this is the API host, not the node host).
 #   mainnet: https://api.mainnet.klever.org
 #   testnet: https://api.testnet.klever.org
 API_URL="${API_URL:-https://api.testnet.klever.org}"
 CONTRACT_ADDRESS="${CONTRACT_ADDRESS:-klv1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq_REPLACE_ME}"
+
+# Reads are free (no wallet), but they still need a real contract address.
+require_contract_address "$CONTRACT_ADDRESS"
 
 ID="${1:-}"
 if [ -z "$ID" ]; then

@@ -16,7 +16,11 @@
 
 set -euo pipefail
 
-# --- Configuration (override via environment or .env) ------------------------
+# Shared helpers + load config from .env (KEY_FILE, CONTRACT_ADDRESS, ...).
+. "$(dirname "${BASH_SOURCE[0]}")/_common.sh"
+load_dotenv
+
+# --- Configuration (from .env above, or environment, or these defaults) ------
 KLEVER_SDK_PATH="${KLEVER_SDK_PATH:-$HOME/klever-sdk}"
 KOPERATOR_BIN="${KOPERATOR_BIN:-$KLEVER_SDK_PATH/koperator}"
 KLEVER_NODE="${KLEVER_NODE:-https://node.testnet.klever.org}"
@@ -24,6 +28,10 @@ KEY_FILE="${KEY_FILE:-$KLEVER_SDK_PATH/walletKey.pem}"
 
 # The deployed contract address (klv1...). Placeholder — set CONTRACT_ADDRESS.
 CONTRACT_ADDRESS="${CONTRACT_ADDRESS:-klv1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq_REPLACE_ME}"
+
+# Writing requires a signed transaction — both a wallet and a real contract.
+require_key_file "$KEY_FILE"
+require_contract_address "$CONTRACT_ADDRESS"
 
 # --- Arguments ---------------------------------------------------------------
 STUDENT="${1:-}"

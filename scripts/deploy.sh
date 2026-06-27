@@ -15,7 +15,11 @@
 
 set -euo pipefail
 
-# --- Configuration (override via environment or .env) ------------------------
+# Shared helpers + load config from .env (KEY_FILE, KLEVER_NODE, ...).
+. "$(dirname "${BASH_SOURCE[0]}")/_common.sh"
+load_dotenv
+
+# --- Configuration (from .env above, or environment, or these defaults) ------
 KLEVER_SDK_PATH="${KLEVER_SDK_PATH:-$HOME/klever-sdk}"
 KSC_BIN="${KSC_BIN:-$KLEVER_SDK_PATH/ksc}"
 KOPERATOR_BIN="${KOPERATOR_BIN:-$KLEVER_SDK_PATH/koperator}"
@@ -30,6 +34,10 @@ KLEVER_NODE="${KLEVER_NODE:-https://node.testnet.klever.org}"
 KEY_FILE="${KEY_FILE:-$KLEVER_SDK_PATH/walletKey.pem}"
 
 CONTRACT_DIR="${CONTRACT_DIR:-contracts/certificate-registry}"
+
+# Fail early with a clear message if the wallet PEM is missing (koperator's own
+# error, "KeyLoaded not found", does not explain what to do).
+require_key_file "$KEY_FILE"
 
 # Resolve this script's directory so we can reuse the project's build logic.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
