@@ -54,8 +54,9 @@ certificate-registry/
 
 > O `src/certificate_registry_proxy.rs` é gerado a partir da ABI e versionado para
 > que o `cargo test` funcione sem build. Regenere-o após mudar a interface pública
-> do contrato: `cd meta && cargo run -- proxy`, depois copie o `output/proxy.rs`
-> por cima dele. Veja `docs/03-build-test-deploy-pt-BR.md`.
+> do contrato: `cd meta && cargo run -- proxy`, depois copie o `../output/proxy.rs`
+> por cima do `../src/certificate_registry_proxy.rs`. Veja
+> `docs/03-build-test-deploy-pt-BR.md`.
 
 ## Build e testes
 

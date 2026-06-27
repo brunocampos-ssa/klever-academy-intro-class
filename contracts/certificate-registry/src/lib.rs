@@ -31,9 +31,10 @@ use klever_sc::derive_imports::*;
 /// Rust client) to call endpoints in a type-safe way.
 ///
 /// Regenerate after changing the contract's public interface with:
-///   `cd meta && cargo run -- proxy`  (writes to `output/proxy.rs`)
-/// then copy it over this file. It is committed so `cargo test` works without a
-/// build step. Do not edit by hand.
+///   `cd meta && cargo run -- proxy`   (writes `../output/proxy.rs`)
+/// then copy `../output/proxy.rs` over this file
+/// (`src/certificate_registry_proxy.rs`). It is committed so `cargo test` works
+/// without a build step. Do not edit by hand.
 pub mod certificate_registry_proxy;
 
 /// The on-chain representation of a single certificate.

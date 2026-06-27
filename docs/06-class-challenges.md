@@ -12,7 +12,7 @@ three. Each challenge lists *what to change* and *where*.
 > interface (new or renamed endpoints, new arguments). When you do, **regenerate
 > the typed proxy** the tests use, or they won't compile:
 > `cd contracts/certificate-registry/meta && cargo run -- proxy`, then copy
-> `output/proxy.rs` over `src/certificate_registry_proxy.rs`. Details in
+> `../output/proxy.rs` over `../src/certificate_registry_proxy.rs`. Details in
 > [`03-build-test-deploy.md`](03-build-test-deploy.md).
 
 ---

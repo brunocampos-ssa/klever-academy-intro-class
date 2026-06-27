@@ -12,7 +12,7 @@ ou faça as três. Cada desafio indica *o que mudar* e *onde*.
 > contrato (endpoints novos ou renomeados, novos argumentos). Quando isso
 > acontecer, **regenere o proxy tipado** que os testes usam, senão eles não
 > compilam: `cd contracts/certificate-registry/meta && cargo run -- proxy`, depois
-> copie o `output/proxy.rs` por cima do `src/certificate_registry_proxy.rs`.
+> copie o `../output/proxy.rs` por cima do `../src/certificate_registry_proxy.rs`.
 > Detalhes em [`03-build-test-deploy-pt-BR.md`](03-build-test-deploy-pt-BR.md).
 
 ---
