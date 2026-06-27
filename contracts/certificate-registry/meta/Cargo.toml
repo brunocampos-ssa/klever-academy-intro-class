@@ -1,0 +1,22 @@
+# The `meta` crate drives the build/ABI generation for the contract.
+# `ksc all build` uses this crate under the hood. You normally do not edit it.
+#
+# NOTE: keep the klever-sc-meta version in sync with the klever-sc version used
+# by the contract crate (see ../Cargo.toml). Verify against https://docs.klever.org.
+
+[package]
+name = "certificate-registry-meta"
+version = "0.1.0"
+edition = "2021"
+authors = ["Klever Academy"]
+publish = false
+
+[dependencies.certificate-registry]
+path = ".."
+
+[dependencies.klever-sc-meta]
+version = "0.43.0"
+
+[[bin]]
+name = "certificate-registry-meta"
+path = "src/main.rs"

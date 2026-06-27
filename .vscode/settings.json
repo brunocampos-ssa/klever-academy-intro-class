@@ -1,0 +1,22 @@
+{
+  // The repository root has no Cargo.toml (it holds a Rust contract, a web app,
+  // scripts and docs). Point rust-analyzer at the contract crates explicitly so
+  // it stops treating the folder as "not a Rust project".
+  //
+  // Paths are relative to this workspace root. If you add more contracts under
+  // contracts/, list each one's Cargo.toml here.
+  "rust-analyzer.linkedProjects": [
+    "./contracts/certificate-registry/Cargo.toml",
+    "./contracts/certificate-registry/meta/Cargo.toml"
+  ],
+
+  // Klever contracts target WebAssembly, but for editor analysis the host
+  // target is fine — rust-analyzer just needs to resolve types and macros.
+  "rust-analyzer.cargo.allTargets": true,
+  "rust-analyzer.check.command": "check",
+
+  // Don't let the editor watch Rust build output.
+  "files.watcherExclude": {
+    "**/target/**": true
+  }
+}

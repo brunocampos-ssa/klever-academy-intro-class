@@ -1,0 +1,89 @@
+{
+  "//": "Reference ABI for the Certificate Registry. `ksc all build` regenerates this into output/. It is committed here so the frontend and scripts can decode results before you build. Keep it in sync with src/lib.rs.",
+  "buildInfo": {
+    "contractCrate": {
+      "name": "certificate-registry",
+      "version": "0.1.0"
+    }
+  },
+  "name": "CertificateRegistry",
+  "constructor": {
+    "inputs": [],
+    "outputs": []
+  },
+  "endpoints": [
+    {
+      "name": "issueCertificate",
+      "mutability": "mutable",
+      "inputs": [
+        { "name": "student", "type": "Address" },
+        { "name": "course", "type": "bytes" },
+        { "name": "metadata_uri", "type": "bytes" }
+      ],
+      "outputs": [{ "type": "u64" }]
+    },
+    {
+      "name": "revokeCertificate",
+      "mutability": "mutable",
+      "inputs": [{ "name": "id", "type": "u64" }],
+      "outputs": []
+    },
+    {
+      "name": "setIssuer",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "inputs": [{ "name": "new_issuer", "type": "Address" }],
+      "outputs": []
+    },
+    {
+      "name": "getCertificate",
+      "mutability": "readonly",
+      "inputs": [{ "name": "id", "type": "u64" }],
+      "outputs": [{ "type": "optional<Certificate>", "multi_result": true }]
+    },
+    {
+      "name": "isValid",
+      "mutability": "readonly",
+      "inputs": [{ "name": "id", "type": "u64" }],
+      "outputs": [{ "type": "bool" }]
+    },
+    {
+      "name": "getTotalCertificates",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [{ "type": "u64" }]
+    },
+    {
+      "name": "getIssuer",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [{ "type": "Address" }]
+    }
+  ],
+  "events": [
+    {
+      "identifier": "certificateIssued",
+      "inputs": [
+        { "name": "id", "type": "u64", "indexed": true },
+        { "name": "student", "type": "Address", "indexed": true }
+      ]
+    },
+    {
+      "identifier": "certificateRevoked",
+      "inputs": [{ "name": "id", "type": "u64", "indexed": true }]
+    }
+  ],
+  "types": {
+    "Certificate": {
+      "type": "struct",
+      "fields": [
+        { "name": "id", "type": "u64" },
+        { "name": "student", "type": "Address" },
+        { "name": "course", "type": "bytes" },
+        { "name": "metadata_uri", "type": "bytes" },
+        { "name": "issued_at", "type": "u64" },
+        { "name": "revoked", "type": "bool" }
+      ]
+    }
+  }
+}

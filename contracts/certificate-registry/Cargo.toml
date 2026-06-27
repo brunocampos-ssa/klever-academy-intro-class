@@ -1,0 +1,32 @@
+# Cargo manifest for the Certificate Registry contract.
+#
+# NOTE: pin `klever-sc` to the version your installed toolchain expects.
+# Check the version with `~/klever-sdk/ksc --version` and the current
+# recommended version at https://docs.klever.org. The version below is a
+# reasonable starting point — adjust if `ksc all build` reports a mismatch.
+
+[package]
+name = "certificate-registry"
+version = "0.1.0"
+edition = "2021"
+authors = ["Klever Academy"]
+publish = false
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies.klever-sc]
+version = "0.43.0"
+
+[dev-dependencies.klever-sc-scenario]
+version = "0.43.0"
+
+# `ksc` builds the contract into WebAssembly for Klever VM. Release profile is
+# tuned for the smallest possible wasm output.
+[profile.release]
+codegen-units = 1
+opt-level = "z"
+lto = true
+debug = false
+panic = "abort"
+overflow-checks = false

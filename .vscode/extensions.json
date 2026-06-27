@@ -1,0 +1,8 @@
+{
+  // VS Code suggests these when the project is opened. They are recommendations
+  // only — nothing is installed automatically.
+  "recommendations": [
+    "rust-lang.rust-analyzer",
+    "tamasfe.even-better-toml"
+  ]
+}
