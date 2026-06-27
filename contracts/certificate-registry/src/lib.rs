@@ -21,6 +21,21 @@
 
 #[allow(unused_imports)]
 use klever_sc::imports::*;
+// Derive macros and attributes (`#[type_abi]`, `TopEncode`/`TopDecode`,
+// `NestedEncode`/`NestedDecode`, `ManagedVecItem`) live in a separate prelude
+// from the traits. Both globs are needed: `imports` for traits/types,
+// `derive_imports` for the macros that generate their implementations.
+use klever_sc::derive_imports::*;
+
+/// Auto-generated typed proxy for this contract, used by the tests (and any
+/// Rust client) to call endpoints in a type-safe way.
+///
+/// Regenerate after changing the contract's public interface with:
+///   `cd meta && cargo run -- proxy`   (writes `../output/proxy.rs`)
+/// then copy `../output/proxy.rs` over this file
+/// (`src/certificate_registry_proxy.rs`). It is committed so `cargo test` works
+/// without a build step. Do not edit by hand.
+pub mod certificate_registry_proxy;
 
 /// The on-chain representation of a single certificate.
 ///

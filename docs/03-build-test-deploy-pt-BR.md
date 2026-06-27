@@ -37,8 +37,36 @@ A saída vai para `contracts/certificate-registry/output/`:
 ```
 
 Os testes rodam em uma **blockchain simulada** (`klever-sc-scenario`) — sem rede,
-sem taxas. Cobrem deploy, emissão e controle de acesso. Adicione mais à medida que
-você estender o contrato (veja o doc de desafios).
+sem taxas e **sem etapa de build**. O harness de testes registra o objeto do
+contrato Rust e o executa em processo, então você *não* precisa rodar o
+`./scripts/build.sh` antes. Os testes incluídos cobrem deploy, emissão e controle
+de acesso. Adicione mais à medida que você estender o contrato (veja o doc de
+desafios).
+
+### O proxy tipado (e como regenerá-lo)
+
+Os testes chamam o contrato por meio de um **proxy tipado** —
+`src/certificate_registry_proxy.rs`, exposto como o módulo
+`certificate_registry_proxy`. Ele é gerado a partir da ABI do contrato e oferece
+métodos com tipos seguros, como `.issue_certificate(...)` e `.is_valid(id)`, em
+vez de chamadas "soltas" baseadas em strings. Ele está versionado no repositório,
+então o `cargo test` funciona de imediato.
+
+**Se você mudar a interface pública do contrato** (adicionar/renomear um endpoint,
+mudar o tipo de um argumento), o proxy fica desatualizado e os testes param de
+compilar. Regenere-o:
+
+```bash
+# A partir da meta crate do contrato:
+cd contracts/certificate-registry/meta
+cargo run -- proxy                 # escreve em ../output/proxy.rs
+cp ../output/proxy.rs ../src/certificate_registry_proxy.rs   # atualiza a cópia versionada
+```
+
+> Um proxy desatualizado aparece como "cannot find method ..." ou um erro de tipo
+> nos testes logo após você editar os endpoints — esse é o sinal para regenerá-lo.
+> A mesma ABI também alimenta o frontend, então rode o build
+> (`./scripts/build.sh`) para atualizar a `abi/` quando mudar a interface.
 
 ---
 

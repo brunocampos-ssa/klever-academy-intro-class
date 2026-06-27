@@ -21,10 +21,18 @@ use klever_sc_scenario::imports::*;
 // Address aliases used inside the simulated world.
 const OWNER: TestAddress = TestAddress::new("owner");
 const STUDENT: TestAddress = TestAddress::new("student");
-const CODE_PATH: MxscPath = MxscPath::new("output/certificate-registry.mxsc.json");
+// CODE_PATH is just an IDENTIFIER for the contract code, not a file that must
+// exist on disk. `register_contract` (below) maps it to the in-process Rust
+// contract object (`ContractBuilder`), so these tests run on a fresh clone with
+// no `./scripts/build.sh`. `output/` is git-ignored build output; you'd only need
+// a real `*.kleversc.json` here if you load compiled bytecode instead.
+const CODE_PATH: KleverscPath = KleverscPath::new("output/certificate-registry.kleversc.json");
 const SC_ADDRESS: TestSCAddress = TestSCAddress::new("certificate-registry");
 
-/// Build the simulated world and register the compiled contract code.
+/// Build the simulated world and register the contract.
+///
+/// `register_contract` links CODE_PATH to the contract's Rust `ContractBuilder`,
+/// running the real contract logic in-process — no compiled wasm/JSON needed.
 fn world() -> ScenarioWorld {
     let mut blockchain = ScenarioWorld::new();
     blockchain.register_contract(CODE_PATH, certificate_registry::ContractBuilder);
@@ -106,7 +114,8 @@ fn non_issuer_cannot_issue_certificate() {
             ManagedBuffer::from(b"Self Issued"),
             ManagedBuffer::from(b"ipfs://nope"),
         )
-        .returns(ExpectError(4, "only the issuer can do this"))
+        // 57 is the Klever VM status code for a user error raised by `require!`.
+        .returns(ExpectError(57, "only the issuer can do this"))
         .run();
 }
 

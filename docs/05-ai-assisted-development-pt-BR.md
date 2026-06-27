@@ -67,7 +67,7 @@ Cole o erro exato do `ksc`/`koperator`/`cargo` e peça as causas prováveis.
 
 **Depurar um erro de build**
 > "O `ksc all build` falha com `<cole o erro>`. Como meu `Cargo.toml` usa o
-> klever-sc 0.43, qual a causa e a correção mais prováveis?"
+> klever-sc 0.45, qual a causa e a correção mais prováveis?"
 
 ---
 

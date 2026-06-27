@@ -37,8 +37,34 @@ Output lands in `contracts/certificate-registry/output/`:
 ```
 
 Tests run in a **simulated blockchain** (`klever-sc-scenario`) — no network, no
-fees. They cover deploy, issuing, and access control. Add more as you extend the
-contract (see the challenges doc).
+fees, and **no build step**. The test harness registers the Rust contract object
+and runs it in-process, so you do *not* need `./scripts/build.sh` first. The
+included tests cover deploy, issuing, and access control. Add more as you extend
+the contract (see the challenges doc).
+
+### The typed proxy (and how to regenerate it)
+
+The tests call the contract through a **typed proxy** —
+`src/certificate_registry_proxy.rs`, exposed as the `certificate_registry_proxy`
+module. It's generated from the contract's ABI and gives type-safe methods like
+`.issue_certificate(...)` and `.is_valid(id)` instead of raw, stringly-typed
+calls. It is committed to the repo so `cargo test` works out of the box.
+
+**If you change the contract's public interface** (add/rename an endpoint, change
+an argument type), the proxy goes stale and the tests stop compiling. Regenerate
+it:
+
+```bash
+# From the contract's meta crate:
+cd contracts/certificate-registry/meta
+cargo run -- proxy                 # writes ../output/proxy.rs
+cp ../output/proxy.rs ../src/certificate_registry_proxy.rs   # refresh the committed copy
+```
+
+> A stale proxy shows up as "cannot find method ..." or a type error in the tests
+> right after you edit endpoints — that's your cue to regenerate it. The same ABI
+> also drives the frontend, so rebuild (`./scripts/build.sh`) to refresh
+> `abi/` when you change the interface.
 
 ---
 

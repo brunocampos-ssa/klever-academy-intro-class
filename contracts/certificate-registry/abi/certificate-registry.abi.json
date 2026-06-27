@@ -1,89 +1,271 @@
 {
-  "//": "Reference ABI for the Certificate Registry. `ksc all build` regenerates this into output/. It is committed here so the frontend and scripts can decode results before you build. Keep it in sync with src/lib.rs.",
-  "buildInfo": {
-    "contractCrate": {
-      "name": "certificate-registry",
-      "version": "0.1.0"
+    "buildInfo": {
+        "rustc": {
+            "version": "1.96.0",
+            "commitHash": "ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96",
+            "commitDate": "2026-05-25",
+            "channel": "Stable",
+            "short": "rustc 1.96.0 (ac68faa20 2026-05-25)"
+        },
+        "contractCrate": {
+            "name": "certificate-registry",
+            "version": "0.1.0"
+        },
+        "framework": {
+            "name": "klever-sc",
+            "version": "0.45.1"
+        }
+    },
+    "docs": [
+        "The Certificate Registry contract.",
+        "",
+        "Everything inside this trait annotated with `#[klever_sc::contract]` becomes",
+        "part of the deployed contract: storage, endpoints (writes), and views (reads)."
+    ],
+    "name": "CertificateRegistry",
+    "constructor": {
+        "docs": [
+            "Runs exactly once, when the contract is deployed.",
+            "",
+            "The deployer becomes the contract owner automatically. Here we also",
+            "record the deployer as the first authorized issuer and start IDs at 0."
+        ],
+        "inputs": [],
+        "outputs": []
+    },
+    "upgradeConstructor": {
+        "docs": [
+            "Called when the contract is upgraded. Kept empty on purpose so an",
+            "upgrade does not reset state. Add migration logic here if you ever",
+            "change the storage layout."
+        ],
+        "inputs": [],
+        "outputs": []
+    },
+    "endpoints": [
+        {
+            "docs": [
+                "Issue a new certificate for a student.",
+                "",
+                "Only the configured issuer can call this. Returns the new certificate ID",
+                "so the caller (script or frontend) knows what to query next.",
+                "",
+                "> Intermediate focus: this is where you would add expiration or roles."
+            ],
+            "name": "issueCertificate",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "student",
+                    "type": "Address"
+                },
+                {
+                    "name": "course",
+                    "type": "bytes"
+                },
+                {
+                    "name": "metadata_uri",
+                    "type": "bytes"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Revoke an existing certificate. Only the issuer can revoke.",
+                "",
+                "Revoking does not delete the record — it flips `revoked = true` so the",
+                "history stays auditable on-chain."
+            ],
+            "name": "revokeCertificate",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "id",
+                    "type": "u64"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "docs": [
+                "Transfer the issuer role to a new address. Owner-only for safety.",
+                "",
+                "> Advanced focus: a single issuer is a simplification. The challenges",
+                "> doc walks through turning this into a multi-issuer role system."
+            ],
+            "name": "setIssuer",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "new_issuer",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "docs": [
+                "Return the full certificate for a given ID, or `None` if it does not exist."
+            ],
+            "name": "getCertificate",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "id",
+                    "type": "u64"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "optional<Certificate>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Validate a certificate: returns `true` only if it exists AND is not revoked.",
+                "",
+                "This is the endpoint a verifier (employer, school) would call to check",
+                "whether a certificate is currently valid."
+            ],
+            "name": "isValid",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "id",
+                    "type": "u64"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "bool"
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Total number of certificates ever issued (including revoked ones)."
+            ],
+            "name": "getTotalCertificates",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "docs": [
+                "The address allowed to issue and revoke certificates.",
+                "Exposed as a view via `#[view(getIssuer)]`."
+            ],
+            "name": "getIssuer",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "Address"
+                }
+            ]
+        }
+    ],
+    "events": [
+        {
+            "docs": [
+                "Emitted whenever a certificate is issued. `#[indexed]` fields become",
+                "searchable topics so dApps can filter by ID or student."
+            ],
+            "identifier": "certificateIssued",
+            "inputs": [
+                {
+                    "name": "id",
+                    "type": "u64",
+                    "indexed": true
+                },
+                {
+                    "name": "student",
+                    "type": "Address",
+                    "indexed": true
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Emitted whenever a certificate is revoked."
+            ],
+            "identifier": "certificateRevoked",
+            "inputs": [
+                {
+                    "name": "id",
+                    "type": "u64",
+                    "indexed": true
+                }
+            ]
+        }
+    ],
+    "kdaAttributes": [],
+    "types": {
+        "Certificate": {
+            "type": "struct",
+            "docs": [
+                "The on-chain representation of a single certificate.",
+                "",
+                "The derive macros make the struct serializable into contract storage and",
+                "decodable by clients (the `#[type_abi]` attribute also exports it to the ABI",
+                "so tools like Klever Connect can decode it automatically)."
+            ],
+            "fields": [
+                {
+                    "docs": [
+                        "Sequential identifier assigned by the contract."
+                    ],
+                    "name": "id",
+                    "type": "u64"
+                },
+                {
+                    "docs": [
+                        "The student's wallet address (who the certificate belongs to)."
+                    ],
+                    "name": "student",
+                    "type": "Address"
+                },
+                {
+                    "docs": [
+                        "Course or class name, e.g. \"Klever Academy Intro Class\"."
+                    ],
+                    "name": "course",
+                    "type": "bytes"
+                },
+                {
+                    "docs": [
+                        "A metadata hash or URI pointing to off-chain details (e.g. IPFS CID)."
+                    ],
+                    "name": "metadata_uri",
+                    "type": "bytes"
+                },
+                {
+                    "docs": [
+                        "Block timestamp (seconds) when the certificate was issued."
+                    ],
+                    "name": "issued_at",
+                    "type": "u64"
+                },
+                {
+                    "docs": [
+                        "Whether the certificate has been revoked by the issuer."
+                    ],
+                    "name": "revoked",
+                    "type": "bool"
+                }
+            ]
+        }
     }
-  },
-  "name": "CertificateRegistry",
-  "constructor": {
-    "inputs": [],
-    "outputs": []
-  },
-  "endpoints": [
-    {
-      "name": "issueCertificate",
-      "mutability": "mutable",
-      "inputs": [
-        { "name": "student", "type": "Address" },
-        { "name": "course", "type": "bytes" },
-        { "name": "metadata_uri", "type": "bytes" }
-      ],
-      "outputs": [{ "type": "u64" }]
-    },
-    {
-      "name": "revokeCertificate",
-      "mutability": "mutable",
-      "inputs": [{ "name": "id", "type": "u64" }],
-      "outputs": []
-    },
-    {
-      "name": "setIssuer",
-      "onlyOwner": true,
-      "mutability": "mutable",
-      "inputs": [{ "name": "new_issuer", "type": "Address" }],
-      "outputs": []
-    },
-    {
-      "name": "getCertificate",
-      "mutability": "readonly",
-      "inputs": [{ "name": "id", "type": "u64" }],
-      "outputs": [{ "type": "optional<Certificate>", "multi_result": true }]
-    },
-    {
-      "name": "isValid",
-      "mutability": "readonly",
-      "inputs": [{ "name": "id", "type": "u64" }],
-      "outputs": [{ "type": "bool" }]
-    },
-    {
-      "name": "getTotalCertificates",
-      "mutability": "readonly",
-      "inputs": [],
-      "outputs": [{ "type": "u64" }]
-    },
-    {
-      "name": "getIssuer",
-      "mutability": "readonly",
-      "inputs": [],
-      "outputs": [{ "type": "Address" }]
-    }
-  ],
-  "events": [
-    {
-      "identifier": "certificateIssued",
-      "inputs": [
-        { "name": "id", "type": "u64", "indexed": true },
-        { "name": "student", "type": "Address", "indexed": true }
-      ]
-    },
-    {
-      "identifier": "certificateRevoked",
-      "inputs": [{ "name": "id", "type": "u64", "indexed": true }]
-    }
-  ],
-  "types": {
-    "Certificate": {
-      "type": "struct",
-      "fields": [
-        { "name": "id", "type": "u64" },
-        { "name": "student", "type": "Address" },
-        { "name": "course", "type": "bytes" },
-        { "name": "metadata_uri", "type": "bytes" },
-        { "name": "issued_at", "type": "u64" },
-        { "name": "revoked", "type": "bool" }
-      ]
-    }
-  }
 }
