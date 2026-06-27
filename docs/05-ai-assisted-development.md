@@ -63,7 +63,7 @@ Paste the exact error from `ksc`/`koperator`/`cargo` and ask for likely causes.
 
 **Debug a build error**
 > "`ksc all build` fails with `<paste error>`. Given my `Cargo.toml` uses
-> klever-sc 0.43, what is the most likely cause and fix?"
+> klever-sc 0.45, what is the most likely cause and fix?"
 
 ---
 

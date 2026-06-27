@@ -44,11 +44,17 @@ Storage:
 certificate-registry/
 ├── Cargo.toml          # contract crate manifest
 ├── src/lib.rs          # the contract (read this first, top to bottom)
+├── src/certificate_registry_proxy.rs  # generated typed proxy (used by tests)
 ├── tests/              # cargo tests using klever-sc-scenario
 ├── meta/               # build/ABI tooling (rarely edited)
 ├── abi/                # reference ABI used by the frontend + scripts
 └── README.md           # this file
 ```
+
+> `src/certificate_registry_proxy.rs` is generated from the ABI and committed so
+> `cargo test` works without a build. Regenerate it after changing the contract's
+> public interface: `cd meta && cargo run -- proxy`, then copy
+> `output/proxy.rs` over it. See `docs/03-build-test-deploy.md`.
 
 ## Build & test
 

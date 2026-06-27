@@ -9,8 +9,10 @@
 # Usage:
 #   ./scripts/test.sh
 #
-# Tip: some scenario tests need the compiled wasm first. If a test complains
-# about a missing .mxsc.json / .wasm, run ./scripts/build.sh before testing.
+# Note: the included tests run the contract in-process (the test registers the
+# Rust contract object directly), so NO prior build is required. If you later add
+# file-based scenario tests that load `output/*.kleversc.json`, run
+# ./scripts/build.sh first to produce that artifact.
 
 set -euo pipefail
 

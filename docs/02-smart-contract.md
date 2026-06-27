@@ -113,6 +113,33 @@ the TypeScript type so the frontend knows the shape.
 
 ---
 
+## The typed proxy (calling the contract from Rust)
+
+The same ABI that describes the contract is also used to **generate a typed
+proxy** — `src/certificate_registry_proxy.rs`. A proxy is a small Rust struct
+whose methods mirror the contract's endpoints and views one-to-one
+(`issue_certificate`, `is_valid`, …), with the correct argument and return types
+baked in.
+
+**Why it exists:** without it, calling the contract means sending a raw function
+name plus hand-encoded byte arguments — easy to get wrong and invisible to the
+compiler. With the proxy, a call like
+`tx().typed(CertificateRegistryProxy).is_valid(1u64)` is checked at compile time:
+wrong argument types or a misspelled endpoint simply won't build. It's the same
+idea as a generated API client from an OpenAPI spec — the interface description
+produces a type-safe client.
+
+In this repo the **tests** use the proxy to talk to the contract. Because it is
+derived from the interface, it must be **regenerated whenever you change the
+endpoints**; the how-to lives in
+[`03-build-test-deploy.md`](03-build-test-deploy.md).
+
+> Beginner focus: the proxy is a type-safe "remote control" for the contract.
+> Intermediate focus: it's generated from the ABI — change the interface, regenerate the proxy.
+> Advanced focus: the same proxy works in tests, scripts, and real clients; it's how Rust callers stay in sync with the deployed ABI.
+
+---
+
 ## Storage
 
 The contract keeps three pieces of persistent state:

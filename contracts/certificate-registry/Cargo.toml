@@ -1,9 +1,10 @@
 # Cargo manifest for the Certificate Registry contract.
 #
-# NOTE: pin `klever-sc` to the version your installed toolchain expects.
-# Check the version with `~/klever-sdk/ksc --version` and the current
-# recommended version at https://docs.klever.org. The version below is a
-# reasonable starting point — adjust if `ksc all build` reports a mismatch.
+# NOTE: keep `klever-sc` aligned with your installed `ksc` (klever-sc-meta).
+# Check it with `~/klever-sdk/ksc --version`; this contract targets 0.45.x, which
+# builds and tests on a STABLE Rust toolchain (no nightly needed). If you bump
+# this, regenerate the proxy (`cd meta && cargo run -- proxy`) since the framework
+# API can change between versions.
 
 [package]
 name = "certificate-registry"
@@ -16,10 +17,10 @@ publish = false
 path = "src/lib.rs"
 
 [dependencies.klever-sc]
-version = "0.43.0"
+version = "0.45.0"
 
 [dev-dependencies.klever-sc-scenario]
-version = "0.43.0"
+version = "0.45.0"
 
 # `ksc` builds the contract into WebAssembly for Klever VM. Release profile is
 # tuned for the smallest possible wasm output.

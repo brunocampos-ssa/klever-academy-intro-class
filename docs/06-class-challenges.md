@@ -8,6 +8,13 @@ three. Each challenge lists *what to change* and *where*.
 > Use `ai.klever.org` to plan and review your changes (see `docs/05`), but
 > always run `./scripts/test.sh` and `./scripts/build.sh` to verify.
 
+> Heads-up: several Intermediate/Advanced challenges change the contract's public
+> interface (new or renamed endpoints, new arguments). When you do, **regenerate
+> the typed proxy** the tests use, or they won't compile:
+> `cd contracts/certificate-registry/meta && cargo run -- proxy`, then copy
+> `output/proxy.rs` over `src/certificate_registry_proxy.rs`. Details in
+> [`03-build-test-deploy.md`](03-build-test-deploy.md).
+
 ---
 
 ## 🟢 Beginner

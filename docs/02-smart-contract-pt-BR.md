@@ -117,6 +117,33 @@ TypeScript para o frontend saber o formato.
 
 ---
 
+## O proxy tipado (chamando o contrato pelo Rust)
+
+A mesma ABI que descreve o contrato também é usada para **gerar um proxy
+tipado** — `src/certificate_registry_proxy.rs`. Um proxy é uma pequena struct
+Rust cujos métodos espelham um a um os endpoints e views do contrato
+(`issue_certificate`, `is_valid`, …), já com os tipos corretos de argumento e
+retorno.
+
+**Por que ele existe:** sem ele, chamar o contrato significa enviar um nome de
+função "solto" mais argumentos codificados à mão em bytes — fácil de errar e
+invisível para o compilador. Com o proxy, uma chamada como
+`tx().typed(CertificateRegistryProxy).is_valid(1u64)` é verificada em tempo de
+compilação: tipos de argumento errados ou um endpoint com nome errado simplesmente
+não compilam. É a mesma ideia de um cliente de API gerado a partir de uma spec
+OpenAPI — a descrição da interface produz um cliente com tipos seguros.
+
+Neste repositório, os **testes** usam o proxy para conversar com o contrato. Como
+ele é derivado da interface, precisa ser **regenerado sempre que você mudar os
+endpoints**; o passo a passo está em
+[`03-build-test-deploy-pt-BR.md`](03-build-test-deploy-pt-BR.md).
+
+> Foco iniciante: o proxy é um "controle remoto" com tipos seguros para o contrato.
+> Foco intermediário: ele é gerado a partir da ABI — mudou a interface, regenere o proxy.
+> Foco avançado: o mesmo proxy serve para testes, scripts e clientes reais; é como os chamadores Rust se mantêm em sincronia com a ABI publicada.
+
+---
+
 ## Storage
 
 O contrato mantém três pedaços de estado persistente:

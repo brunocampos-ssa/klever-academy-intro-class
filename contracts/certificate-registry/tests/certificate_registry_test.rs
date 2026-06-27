@@ -21,7 +21,7 @@ use klever_sc_scenario::imports::*;
 // Address aliases used inside the simulated world.
 const OWNER: TestAddress = TestAddress::new("owner");
 const STUDENT: TestAddress = TestAddress::new("student");
-const CODE_PATH: MxscPath = MxscPath::new("output/certificate-registry.mxsc.json");
+const CODE_PATH: KleverscPath = KleverscPath::new("output/certificate-registry.kleversc.json");
 const SC_ADDRESS: TestSCAddress = TestSCAddress::new("certificate-registry");
 
 /// Build the simulated world and register the compiled contract code.
@@ -106,7 +106,8 @@ fn non_issuer_cannot_issue_certificate() {
             ManagedBuffer::from(b"Self Issued"),
             ManagedBuffer::from(b"ipfs://nope"),
         )
-        .returns(ExpectError(4, "only the issuer can do this"))
+        // 57 is the Klever VM status code for a user error raised by `require!`.
+        .returns(ExpectError(57, "only the issuer can do this"))
         .run();
 }
 
