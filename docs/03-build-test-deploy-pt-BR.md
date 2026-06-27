@@ -148,7 +148,7 @@ CONTRACT_ADDRESS=klv1... ./scripts/query-certificate.sh 1
 
 Ou veja no explorer:
 
-- Testnet: `https://testnet.kleverscan.org/account/<endereco_do_contrato>`
+- Testnet: `https://testnet.kleverscan.org/smart-contract/<endereco_do_contrato>`
 
 ---
 

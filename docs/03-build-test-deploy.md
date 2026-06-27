@@ -144,7 +144,7 @@ CONTRACT_ADDRESS=klv1... ./scripts/query-certificate.sh 1
 
 Or check it on the explorer:
 
-- Testnet: `https://testnet.kleverscan.org/account/<contract_address>`
+- Testnet: `https://testnet.kleverscan.org/smart-contract/<contract_address>`
 
 ---
 
