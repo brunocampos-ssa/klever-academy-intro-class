@@ -5,7 +5,7 @@
  * This component just builds the call and lets the extension sign it.
  */
 import { useState } from "react";
-import type { BrowserWallet } from "@klever/connect-wallet";
+import type { BrowserWallet } from "@klever/connect";
 import { getWriteContract } from "../klever";
 
 type Props = {
@@ -25,12 +25,17 @@ export function IssueCertificate({ wallet }: Props) {
     setBusy(true);
     try {
       const contract = getWriteContract(wallet);
+      // `course` and `metadata_uri` are `bytes` in the ABI. The SDK only
+      // UTF-8-encodes values for `string` params — for `bytes` it passes the
+      // value straight through, so we must hand it real bytes ourselves.
+      // (The `student` arg is an `Address`; the SDK decodes klv1... for us.)
+      const toBytes = (s: string) => new TextEncoder().encode(s);
       // The extension will pop up to sign this transaction.
       const result = await contract.invoke(
         "issueCertificate",
         student,
-        course,
-        metadataUri,
+        toBytes(course),
+        toBytes(metadataUri),
       );
       setStatus(`✅ Submitted: ${JSON.stringify(result)}`);
     } catch (e) {

@@ -127,4 +127,37 @@ For reads, skip signing entirely: `contract.call("isValid", id)`.
 
 ---
 
+## Run the web app locally
+
+First point the app at your deployed contract. Copy the example env file and set
+`VITE_CONTRACT_ADDRESS` to the address printed by `./scripts/deploy.sh`:
+
+```bash
+cd app/web
+cp .env.example .env
+# edit .env: VITE_CONTRACT_ADDRESS=klv1...your contract...
+```
+
+Then install and start the dev server:
+
+```bash
+npm install
+npm run dev
+```
+
+Open the printed URL (typically `http://localhost:5173`) in a browser that has the
+**Klever Web Extension** installed, unlocked, and set to **Testnet**. In the UI you
+can:
+
+1. **Connect** your wallet — the extension popup approves it.
+2. **Issue** a certificate — issuer wallet only; a signed transaction.
+3. **Verify** a certificate by id — a free read, no signing.
+
+> Requirements: Node.js 20.19+ (or 22.12+) (see [`01-setup.md`](01-setup.md)), the Klever Web
+> Extension, and a deployed `CONTRACT_ADDRESS`. The dev server hot-reloads, so edits
+> to components show up instantly. The private key never leaves the extension — the
+> app only asks it to sign.
+
+---
+
 Next: [`05-ai-assisted-development.md`](05-ai-assisted-development.md)

@@ -28,6 +28,29 @@ Output lands in `contracts/certificate-registry/output/`:
 > ❌ Do not use `sc-meta all build`, `cargo build`, or `mxpy` — those belong to
 > other ecosystems. Klever builds with `ksc`.
 
+### Build requirements & the wasm-link note
+
+Two things the build needs, and one rough edge worth knowing:
+
+1. **`ksc` discovers the contract via a `klever.json` marker** in the contract
+   folder (`contracts/certificate-registry/klever.json`). Without it, `ksc all
+   build` prints *"Found 0 contract crates"* and silently does nothing — the
+   marker is what makes the folder a buildable contract.
+2. **A Rust wasm target must be installed** — set up once in
+   [`01-setup.md`](01-setup.md) (section 3, "Add the WebAssembly build target").
+3. **On Rust 1.82+**, `ksc`'s own wasm link can fail with
+   `undefined symbol: mBufferNew` (Rust stopped auto-importing undefined wasm
+   symbols, and the installed `ksc` doesn't pass `--import-undefined`).
+   `build.sh` **detects this and automatically relinks** the generated `wasm/`
+   crate with the right flag — kept in
+   `contracts/certificate-registry/.cargo/config.toml` — so you still get a
+   deployable `output/certificate-registry.wasm`. The clean long-term fix is to
+   update the Klever SDK from https://install.klever.org once a release handles
+   this natively.
+
+> `build.sh` never reports a false success: if no `.wasm` is produced (even via
+> the fallback), it exits with an error instead of printing "Build complete".
+
 ---
 
 ## Test
@@ -113,15 +136,42 @@ export const CONTRACT_ADDRESS = "klv1your_contract_address...";
 
 ## Verify the deployment
 
-Query a free view — if the contract answers, it's live:
+A freshly deployed contract is **empty**, so querying before issuing returns
+nothing useful. Do the full round trip: **issue a certificate, then read it back.**
+
+First tell the scripts which contract to talk to — set `CONTRACT_ADDRESS` in
+`.env` (recommended) or pass it inline on each command:
 
 ```bash
-CONTRACT_ADDRESS=klv1... ./scripts/query-certificate.sh 1
+# .env  (loaded automatically by the scripts)
+CONTRACT_ADDRESS=klv1your_contract_address...
 ```
 
-Or check it on the explorer:
+**1) Issue a certificate** — a write, so it needs the issuer wallet. The deployer
+is the issuer (see `init`), so use the same `KEY_FILE` you deployed with:
 
-- Testnet: `https://testnet.kleverscan.org/account/<contract_address>`
+```bash
+./scripts/issue-certificate.sh klv1student_address... "Klever Academy Intro Class" "ipfs://cid"
+```
+
+The result's `returnData` is the new certificate **id** (the first one is `1`).
+
+**2) Query it back** — a free read, no wallet needed:
+
+```bash
+./scripts/query-certificate.sh 1
+```
+
+`isValid` should return `true` and `getCertificate` should return the stored
+fields. If both answer, your contract is live and working.
+
+> The scripts read `CONTRACT_ADDRESS` (and `KEY_FILE`, `KLEVER_NODE`) from `.env`.
+> An inline environment variable (e.g. `CONTRACT_ADDRESS=klv1... ./scripts/...`)
+> overrides `.env` for that one run.
+
+You can also check it on the explorer:
+
+- Testnet: `https://testnet.kleverscan.org/smart-contract/<contract_address>`
 
 ---
 

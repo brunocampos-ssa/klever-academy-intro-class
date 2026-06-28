@@ -17,21 +17,36 @@
 
 set -euo pipefail
 
-# --- Configuration -----------------------------------------------------------
+# Shared helpers + load config from .env (CONTRACT_ADDRESS, API_URL, ...).
+. "$(dirname "${BASH_SOURCE[0]}")/_common.sh"
+load_dotenv "$(dirname "${BASH_SOURCE[0]}")/../.env"
+
+# --- Configuration (from .env above, or environment, or these defaults) ------
 # API base for queries (note: this is the API host, not the node host).
 #   mainnet: https://api.mainnet.klever.org
 #   testnet: https://api.testnet.klever.org
 API_URL="${API_URL:-https://api.testnet.klever.org}"
 CONTRACT_ADDRESS="${CONTRACT_ADDRESS:-klv1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq_REPLACE_ME}"
 
+# Reads are free (no wallet), but they still need a real contract address.
+require_contract_address "$CONTRACT_ADDRESS"
+
 ID="${1:-}"
 if [ -z "$ID" ]; then
   echo "Usage: $0 <certificate_id>"
   exit 1
 fi
+# The id must be a non-negative integer — sc_arg_u64 feeds it to `printf %x`,
+# which errors cryptically on anything else.
+case "$ID" in
+  *[!0-9]*|'')
+    echo "ERROR: certificate id must be a non-negative integer (got: $ID)" >&2
+    exit 1 ;;
+esac
 
-# Klever VM expects arguments hex-encoded. Encode the u64 id as 16 hex chars.
-ID_HEX="$(printf '%016x' "$ID")"
+# The /sc/query API expects each argument BASE64-encoded (not hex). Encode the
+# u64 id with the shared helper (8-byte big-endian -> base64).
+ID_ARG="$(sc_arg_u64 "$ID")"
 
 echo "==> Querying certificate id=$ID on $API_URL"
 
@@ -39,7 +54,7 @@ query() {
   local func="$1"
   curl -s -X POST "$API_URL/v1.0/sc/query" \
     -H "Content-Type: application/json" \
-    -d "{\"ScAddress\":\"$CONTRACT_ADDRESS\",\"FuncName\":\"$func\",\"Arguments\":[\"$ID_HEX\"]}"
+    -d "{\"ScAddress\":\"$CONTRACT_ADDRESS\",\"FuncName\":\"$func\",\"Arguments\":[\"$ID_ARG\"]}"
 }
 
 echo "--- isValid ---"

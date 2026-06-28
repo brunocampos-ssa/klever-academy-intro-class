@@ -13,16 +13,22 @@
  * version, check https://docs.klever.org.
  */
 
-import { KleverProvider } from "@klever/connect-provider";
-import { BrowserWallet } from "@klever/connect-wallet";
-import { Contract } from "@klever/connect-contracts";
-import type { ContractABI } from "@klever/connect-contracts";
+import {
+  KleverProvider,
+  BrowserWallet,
+  Contract,
+  type ContractABI,
+} from "@klever/connect";
 
 // 1) Network: "mainnet" | "testnet" | "devnet". Use testnet for class.
 export const NETWORK = "testnet" as const;
 
-// 2) Contract address — REPLACE with the address printed by ./scripts/deploy.sh
+// 2) Contract address. Set VITE_CONTRACT_ADDRESS in app/web/.env (copy it from
+//    .env.example) to the address printed by ./scripts/deploy.sh. The fallback
+//    is an obvious placeholder so a missing value fails loudly instead of
+//    silently pointing at someone else's contract.
 export const CONTRACT_ADDRESS =
+  import.meta.env.VITE_CONTRACT_ADDRESS?.trim() ||
   "klv1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq_REPLACE_ME";
 
 // 3) ABI — import the generated/reference ABI. After `ksc all build`, you can

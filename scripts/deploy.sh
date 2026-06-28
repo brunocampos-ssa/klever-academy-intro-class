@@ -15,7 +15,11 @@
 
 set -euo pipefail
 
-# --- Configuration (override via environment or .env) ------------------------
+# Shared helpers + load config from .env (KEY_FILE, KLEVER_NODE, ...).
+. "$(dirname "${BASH_SOURCE[0]}")/_common.sh"
+load_dotenv "$(dirname "${BASH_SOURCE[0]}")/../.env"
+
+# --- Configuration (from .env above, or environment, or these defaults) ------
 KLEVER_SDK_PATH="${KLEVER_SDK_PATH:-$HOME/klever-sdk}"
 KSC_BIN="${KSC_BIN:-$KLEVER_SDK_PATH/ksc}"
 KOPERATOR_BIN="${KOPERATOR_BIN:-$KLEVER_SDK_PATH/koperator}"
@@ -31,13 +35,36 @@ KEY_FILE="${KEY_FILE:-$KLEVER_SDK_PATH/walletKey.pem}"
 
 CONTRACT_DIR="${CONTRACT_DIR:-contracts/certificate-registry}"
 
-# --- Build first -------------------------------------------------------------
-echo "==> Building before deploy..."
-( cd "$CONTRACT_DIR" && "$KSC_BIN" all build )
+# Resolve relative paths (e.g. KEY_FILE=./walletKey.pem from .env) against the
+# repo root so the script works regardless of the current working directory.
+KEY_FILE="$(resolve_path "$KEY_FILE")"
+CONTRACT_DIR="$(resolve_path "$CONTRACT_DIR")"
 
-WASM_FILE="$(find "$CONTRACT_DIR/output" -name "*.wasm" | head -1)"
-if [ -z "$WASM_FILE" ]; then
-  echo "ERROR: No .wasm found. Did the build succeed?"
+# Fail early with a clear message if the wallet PEM is missing (koperator's own
+# error, "KeyLoaded not found", does not explain what to do).
+require_key_file "$KEY_FILE"
+
+# Resolve this script's directory so we can reuse the project's build logic.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# --- Build first (single source of truth: scripts/build.sh) ------------------
+# Reuse the EXACT same build as `./scripts/build.sh` — including the
+# Rust 1.82+ wasm-link fallback — so deploy never diverges from build. Env
+# overrides are passed through so a custom SDK path / contract dir still works.
+echo "==> Building before deploy..."
+CONTRACT_DIR="$CONTRACT_DIR" KLEVER_SDK_PATH="$KLEVER_SDK_PATH" KSC_BIN="$KSC_BIN" \
+  "$SCRIPT_DIR/build.sh"
+
+# Prefer the canonical artifact build.sh produces; fall back to a search only
+# if it's missing (avoids picking the wrong file when output/ has several).
+WASM_FILE="$CONTRACT_DIR/output/certificate-registry.wasm"
+if [ ! -f "$WASM_FILE" ]; then
+  # `-print -quit` (not `| head -1`) avoids find being killed by SIGPIPE under
+  # `set -o pipefail` when head closes the pipe early.
+  WASM_FILE="$(find "$CONTRACT_DIR/output" -name '*.wasm' -print -quit)"
+fi
+if [ -z "${WASM_FILE:-}" ] || [ ! -f "$WASM_FILE" ]; then
+  echo "ERROR: No .wasm found after build. Re-read the build output above."
   exit 1
 fi
 

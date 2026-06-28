@@ -9,7 +9,7 @@
  * The wallet lives in App state so children can share the same connection.
  */
 import { useState } from "react";
-import type { BrowserWallet } from "@klever/connect-wallet";
+import type { BrowserWallet } from "@klever/connect";
 import { ConnectWallet } from "./components/ConnectWallet";
 import { IssueCertificate } from "./components/IssueCertificate";
 import { CertificateViewer } from "./components/CertificateViewer";

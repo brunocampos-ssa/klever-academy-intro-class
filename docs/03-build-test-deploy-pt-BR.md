@@ -28,6 +28,30 @@ A saída vai para `contracts/certificate-registry/output/`:
 > ❌ Não use `sc-meta all build`, `cargo build` nem `mxpy` — esses pertencem a
 > outros ecossistemas. A Klever faz o build com o `ksc`.
 
+### Requisitos do build e a nota sobre o link do wasm
+
+Duas coisas que o build precisa, e uma arestinha que vale conhecer:
+
+1. **O `ksc` descobre o contrato por um marcador `klever.json`** na pasta do
+   contrato (`contracts/certificate-registry/klever.json`). Sem ele, o `ksc all
+   build` imprime *"Found 0 contract crates"* e não faz nada silenciosamente — é
+   o marcador que torna a pasta um contrato compilável.
+2. **Um target wasm do Rust precisa estar instalado** — configurado uma vez no
+   [`01-setup-pt-BR.md`](01-setup-pt-BR.md) (seção 3, "Adicione o target de build
+   WebAssembly").
+3. **No Rust 1.82+**, o próprio link do wasm pelo `ksc` pode falhar com
+   `undefined symbol: mBufferNew` (o Rust parou de importar automaticamente
+   símbolos wasm indefinidos, e o `ksc` instalado não passa `--import-undefined`).
+   O `build.sh` **detecta isso e refaz o link automaticamente** da crate `wasm/`
+   gerada com a flag correta — guardada em
+   `contracts/certificate-registry/.cargo/config.toml` — então você ainda obtém
+   um `output/certificate-registry.wasm` publicável. A correção limpa de longo
+   prazo é atualizar o Klever SDK em https://install.klever.org quando uma versão
+   tratar isso nativamente.
+
+> O `build.sh` nunca reporta sucesso falso: se nenhum `.wasm` for produzido (nem
+> pela alternativa), ele termina com erro em vez de imprimir "Build complete".
+
 ---
 
 ## Testes
@@ -116,15 +140,44 @@ export const CONTRACT_ADDRESS = "klv1seu_endereco_do_contrato...";
 
 ## Verifique o deploy
 
-Consulte uma view gratuita — se o contrato responder, está no ar:
+Um contrato recém-publicado está **vazio**, então consultar antes de emitir não
+retorna nada útil. Faça o ciclo completo: **emita um certificado e depois leia de
+volta.**
+
+Primeiro, diga aos scripts com qual contrato falar — defina `CONTRACT_ADDRESS` no
+`.env` (recomendado) ou passe inline em cada comando:
 
 ```bash
-CONTRACT_ADDRESS=klv1... ./scripts/query-certificate.sh 1
+# .env  (carregado automaticamente pelos scripts)
+CONTRACT_ADDRESS=klv1seu_endereco_do_contrato...
 ```
 
-Ou veja no explorer:
+**1) Emita um certificado** — uma escrita, então precisa da carteira emissora.
+Quem fez o deploy é o emissor (veja o `init`), então use o mesmo `KEY_FILE` do
+deploy:
 
-- Testnet: `https://testnet.kleverscan.org/account/<endereco_do_contrato>`
+```bash
+./scripts/issue-certificate.sh klv1endereco_do_aluno... "Klever Academy Intro Class" "ipfs://cid"
+```
+
+O `returnData` do resultado é o **id** do novo certificado (o primeiro é `1`).
+
+**2) Consulte de volta** — uma leitura gratuita, sem carteira:
+
+```bash
+./scripts/query-certificate.sh 1
+```
+
+O `isValid` deve retornar `true` e o `getCertificate` deve retornar os campos
+guardados. Se os dois responderem, seu contrato está no ar e funcionando.
+
+> Os scripts leem `CONTRACT_ADDRESS` (e `KEY_FILE`, `KLEVER_NODE`) do `.env`.
+> Uma variável de ambiente inline (ex.: `CONTRACT_ADDRESS=klv1... ./scripts/...`)
+> tem precedência sobre o `.env` naquela execução.
+
+Você também pode ver no explorer:
+
+- Testnet: `https://testnet.kleverscan.org/smart-contract/<endereco_do_contrato>`
 
 ---
 

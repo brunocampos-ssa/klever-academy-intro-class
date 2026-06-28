@@ -127,4 +127,37 @@ Para leituras, pule a assinatura por completo: `contract.call("isValid", id)`.
 
 ---
 
+## Rodar o app web localmente
+
+Primeiro, aponte o app para o seu contrato publicado. Copie o arquivo de exemplo
+e defina `VITE_CONTRACT_ADDRESS` com o endereço impresso pelo `./scripts/deploy.sh`:
+
+```bash
+cd app/web
+cp .env.example .env
+# edite o .env: VITE_CONTRACT_ADDRESS=klv1...seu contrato...
+```
+
+Depois instale as dependências e suba o servidor de desenvolvimento:
+
+```bash
+npm install
+npm run dev
+```
+
+Abra a URL que aparecer (geralmente `http://localhost:5173`) em um navegador com a
+**Klever Web Extension** instalada, desbloqueada e na **Testnet**. Na interface você
+pode:
+
+1. **Conectar** sua carteira — o pop-up da extensão aprova.
+2. **Emitir** um certificado — só a carteira emissora; uma transação assinada.
+3. **Verificar** um certificado por id — uma leitura gratuita, sem assinar.
+
+> Requisitos: Node.js 20.19+ (ou 22.12+) (veja o [`01-setup-pt-BR.md`](01-setup-pt-BR.md)), a Klever
+> Web Extension e um `CONTRACT_ADDRESS` publicado. O servidor de desenvolvimento faz
+> hot-reload, então edições nos componentes aparecem na hora. A chave privada nunca
+> sai da extensão — o app apenas pede para ela assinar.
+
+---
+
 Próximo: [`05-ai-assisted-development-pt-BR.md`](05-ai-assisted-development-pt-BR.md)

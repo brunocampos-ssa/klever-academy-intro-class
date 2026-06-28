@@ -16,7 +16,8 @@ Everything you need installed before the class. Budget ~15 minutes.
 | --- | --- | --- |
 | Klever SDK (`ksc`, `koperator`) | build, deploy, and call contracts | https://install.klever.org |
 | Rust + Cargo | the contract is written in Rust | https://rustup.rs |
-| Node.js 18+ | run the frontend and `interact.ts` | https://nodejs.org |
+| Rust **wasm target** | compile the contract to WebAssembly (Klever VM is wasm-based) | `rustup` |
+| Node.js 20.19+ / 22.12+ | run the frontend and `interact.ts` | https://nodejs.org |
 | `jq`, `curl` | used by the shell scripts | your package manager |
 | Klever Web Extension | sign transactions in the browser | Chrome/Brave store |
 
@@ -45,7 +46,26 @@ After it finishes, the key binaries are:
 
 ---
 
-## 3. Check your environment
+## 3. Add the WebAssembly build target
+
+**Klever VM runs WebAssembly**, so the contract compiles to a `.wasm`. You
+cannot build a Klever smart contract without a Rust **wasm target** installed.
+
+```bash
+# Rust 1.85+ (what `ksc` uses by default):
+rustup target add wasm32v1-none
+
+# Older Rust (< 1.85):
+rustup target add wasm32-unknown-unknown
+```
+
+> Not sure which? Installing **both** is harmless — `./scripts/build.sh` picks
+> whichever your toolchain uses. If you skip this, the build fails with
+> `error[E0463]: can't find crate for 'core'` (the wasm target is missing).
+
+---
+
+## 4. Check your environment
 
 ```bash
 # Klever tools
@@ -56,7 +76,10 @@ After it finishes, the key binaries are:
 rustc --version
 cargo --version
 
-# Node.js (needs 18+)
+# Rust wasm target (at least one of these must be listed)
+rustup target list --installed | grep wasm32
+
+# Node.js (needs 20.19+ or 22.12+)
 node --version
 npm --version
 
@@ -65,13 +88,14 @@ jq --version
 curl --version
 ```
 
-If any command is "not found", install that tool before continuing.
+If any command is "not found" (or the wasm target line is empty), install that
+tool/target before continuing.
 
 ---
 
-## 4. Node.js requirement for the frontend
+## 5. Node.js requirement for the frontend
 
-The web app uses Vite + React and needs **Node.js 18 or newer**.
+The web app uses Vite + React and needs **Node.js 20.19+ (or 22.12+)**.
 
 ```bash
 cd app/web
@@ -81,31 +105,85 @@ npm run dev   # starts the dev server (don't worry if the contract isn't deploye
 
 ---
 
-## 5. Wallet & network preparation
+## 6. Wallet & network preparation
 
-For class we use **testnet** (free, safe, disposable).
+For class we use **testnet** (free, safe, disposable). There are **two places**
+that sign transactions, and they use **different** credentials:
+
+| Where | Signs with | Used by |
+| --- | --- | --- |
+| The web app (`app/web`) | the **Klever Web Extension** | the frontend (BrowserWallet) |
+| The CLI scripts (deploy/issue) | a **PEM key file** (`koperator`) | `./scripts/deploy.sh`, etc. |
+
+### 6.1 Browser extension (for the web app)
 
 1. Install and unlock the **Klever Web Extension**.
 2. Create a fresh wallet (do NOT reuse a wallet that holds real funds).
 3. Switch the extension network to **Testnet**.
-4. Get free test KLV from the testnet faucet so you can pay deploy fees:
+
+### 6.2 CLI wallet key file (PEM) — for `koperator`
+
+The CLI scripts deploy and invoke via `koperator`, which signs with a **PEM key
+file**. The `KEY_FILE` setting in `.env` points to it. You have two options:
+
+**Option A — generate a fresh CLI wallet (simplest, recommended for class):**
 
 ```bash
-# Replace <your_address> with your klv1... address
+# Creates a new wallet and writes the PEM (with 0600 permissions).
+# It prints the new klv1... address.
+~/klever-sdk/koperator account create --key-file=./walletKey.pem
+```
+
+**Option B — reuse your extension account (import its private key):**
+
+Use this if you want the CLI to sign as the **same account** as your browser
+extension. In the Klever Web Extension, reveal/export that account's **hex
+private key** (account settings → export private key), then:
+
+```bash
+# <HEX_PRIVATE_KEY> is the 64-char hex secret key exported from the extension.
+~/klever-sdk/koperator account import-sk <HEX_PRIVATE_KEY> --path ./walletKey.pem
+```
+
+> If the extension only gives you a **mnemonic/seed phrase** (not a hex key),
+> just use Option A — for class you don't need the CLI to share the extension's
+> account.
+
+Point the scripts at the PEM in `.env` (see `.env.example`):
+
+```bash
+KEY_FILE=./walletKey.pem        # or an absolute path like $HOME/klever-sdk/walletKey.pem
+```
+
+Check the address of a PEM at any time:
+
+```bash
+~/klever-sdk/koperator account address --key-file=./walletKey.pem
+```
+
+### 6.3 Fund the CLI wallet from the testnet faucet
+
+Deploys cost a small fee, so the **PEM wallet's** address needs test KLV:
+
+```bash
+# Grab the address from your PEM, then ask the faucet to fund it.
+ADDR=$(~/klever-sdk/koperator account address --key-file=./walletKey.pem | grep -oE 'klv1[0-9a-z]+' | tail -1)
 curl -X POST \
-  "https://api.testnet.klever.org/v1.0/transaction/send-user-funds/<your_address>" \
+  "https://api.testnet.klever.org/v1.0/transaction/send-user-funds/$ADDR" \
   -H "Content-Type: application/json"
 ```
 
-5. For the CLI scripts, export your wallet key file as a PEM and point the
-   scripts at it via `KEY_FILE` in `.env` (see `.env.example`).
-
+> ⚠️ **Security.** `import-sk` takes the key as a command-line argument, so it
+> lands in your shell history and process list. Use a **dedicated testnet
+> wallet**, never one with real funds, and clear that history line afterward
+> (e.g. `history -d <n>`).
+>
 > ⚠️ Never commit a key file or a mnemonic. The `.gitignore` already excludes
 > `*.pem`, but stay careful.
 
 ---
 
-## 6. Editor setup (VS Code + rust-analyzer)
+## 7. Editor setup (VS Code + rust-analyzer)
 
 The contract is Rust, but you open this repo at its **root** — and the root has
 no `Cargo.toml` (it holds the contract, the web app, scripts, and docs). Because
