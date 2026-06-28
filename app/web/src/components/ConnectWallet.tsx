@@ -6,7 +6,7 @@
  * private key never enters our app. See klever.ts -> connectWallet().
  */
 import { useState } from "react";
-import type { BrowserWallet } from "@klever/connect-wallet";
+import type { BrowserWallet } from "@klever/connect";
 import { connectWallet } from "../klever";
 
 type Props = {
