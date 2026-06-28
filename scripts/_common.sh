@@ -18,10 +18,10 @@
 #
 # Precedence: explicit environment variables WIN over .env. So
 # `KLEVER_NODE=... ./scripts/deploy.sh` is never silently overridden by .env —
-# .env only fills in values you did not already set. (We snapshot the current
-# environment, source .env, then re-assert the snapshot on top.)
+# .env only fills in values you did not already set. (For each line we skip the
+# key if it is already present in the environment, so pre-set variables win.)
 load_dotenv() {
-  local env_file="${1:-.env}" line key
+  local env_file="${1:-.env}" line key val
   [ -f "$env_file" ] || return 0
   echo "==> Loading config from $env_file"
   while IFS= read -r line || [ -n "$line" ]; do
@@ -31,7 +31,14 @@ load_dotenv() {
     key="${line%%=*}"
     case "$key" in ''|*[!A-Za-z0-9_]*) continue ;; esac   # valid var name only
     [ -n "${!key+x}" ] && continue                 # already set? environment wins
-    eval "export $line"                            # expand $HOME etc., then export
+    val="${line#*=}"                               # value = everything after first =
+    case "$val" in                                 # strip one pair of surrounding quotes
+      \"*\") val="${val#\"}"; val="${val%\"}" ;;
+      \'*\') val="${val#\'}"; val="${val%\'}" ;;
+    esac
+    val="${val/#\~/$HOME}"                         # expand a leading ~
+    val="${val//\$HOME/$HOME}"; val="${val//\$\{HOME\}/$HOME}"  # expand $HOME refs
+    export "$key=$val"                             # no eval -> no command substitution
   done < "$env_file"
 }
 

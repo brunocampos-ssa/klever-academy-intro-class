@@ -17,7 +17,7 @@ Tudo o que você precisa instalar antes da aula. Reserve uns ~15 minutos.
 | Klever SDK (`ksc`, `koperator`) | compilar, fazer deploy e chamar contratos | https://install.klever.org |
 | Rust + Cargo | o contrato é escrito em Rust | https://rustup.rs |
 | **Target wasm** do Rust | compilar o contrato para WebAssembly (a Klever VM é baseada em wasm) | `rustup` |
-| Node.js 18+ | rodar o frontend e o `interact.ts` | https://nodejs.org |
+| Node.js 20.19+ / 22.12+ | rodar o frontend e o `interact.ts` | https://nodejs.org |
 | `jq`, `curl` | usados pelos scripts de shell | seu gerenciador de pacotes |
 | Klever Web Extension | assinar transações no navegador | loja do Chrome/Brave |
 
@@ -80,7 +80,7 @@ cargo --version
 # Target wasm do Rust (pelo menos um destes deve aparecer)
 rustup target list --installed | grep wasm32
 
-# Node.js (precisa ser 18+)
+# Node.js (precisa ser 20.19+ ou 22.12+)
 node --version
 npm --version
 
@@ -96,7 +96,7 @@ instale essa ferramenta/target antes de continuar.
 
 ## 5. Requisito de Node.js para o frontend
 
-O app web usa Vite + React e precisa de **Node.js 18 ou mais recente**.
+O app web usa Vite + React e precisa de **Node.js 20.19+ (ou 22.12+)**.
 
 ```bash
 cd app/web

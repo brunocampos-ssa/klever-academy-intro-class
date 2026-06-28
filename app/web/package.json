@@ -4,6 +4,9 @@
   "version": "0.1.0",
   "type": "module",
   "description": "Frontend for the Klever Academy Intro Class — connect a wallet and interact with the Certificate Registry.",
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
