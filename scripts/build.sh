@@ -50,6 +50,17 @@ if [ ! -d "$CONTRACT_DIR" ]; then
   exit 1
 fi
 
+# Require the Klever contract marker before proceeding. This script removes
+# "$CONTRACT_DIR/wasm" and output/* below, so refuse to run unless CONTRACT_DIR
+# is actually a contract dir — a misconfigured value (e.g. /) must never reach
+# the destructive cleanup.
+if [ ! -f "$CONTRACT_DIR/klever.json" ]; then
+  echo "ERROR: $CONTRACT_DIR is not a Klever contract (no klever.json)."
+  echo "Refusing to continue — build.sh removes $CONTRACT_DIR/wasm and output/*."
+  echo "Set CONTRACT_DIR to the contract directory. See docs/03-build-test-deploy.md."
+  exit 1
+fi
+
 # --- 1) Official build (also generates ABI + the wasm/ crate) ----------------
 # Start clean so the "did we produce a .wasm?" check below reflects THIS run and
 # never succeeds on a stale artifact from a previous build. Also drop the

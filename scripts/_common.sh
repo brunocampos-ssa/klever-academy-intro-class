@@ -6,7 +6,7 @@
 # `set -euo pipefail`:
 #
 #   . "$(dirname "${BASH_SOURCE[0]}")/_common.sh"
-#   load_dotenv
+#   load_dotenv "$(dirname "${BASH_SOURCE[0]}")/../.env"
 #
 # Keeping config-loading and the pre-flight checks here means every script
 # behaves the same way (single source of truth).
