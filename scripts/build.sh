@@ -32,6 +32,15 @@ KSC_BIN="${KSC_BIN:-$KLEVER_SDK_PATH/ksc}"
 CONTRACT_DIR="${CONTRACT_DIR:-contracts/certificate-registry}"
 WASM_NAME="certificate-registry.wasm"
 
+# Resolve a relative CONTRACT_DIR against the repo root so the script (and the
+# destructive cleanup below) work regardless of the current working directory.
+# build.sh is standalone (it does not source _common.sh), so this is inlined.
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+case "$CONTRACT_DIR" in
+  /*) ;;
+  *) CONTRACT_DIR="$REPO_ROOT/$CONTRACT_DIR" ;;
+esac
+
 echo "==> Building contract in: $CONTRACT_DIR"
 
 if [ ! -x "$KSC_BIN" ]; then

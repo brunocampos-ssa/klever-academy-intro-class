@@ -11,6 +11,20 @@
 # Keeping config-loading and the pre-flight checks here means every script
 # behaves the same way (single source of truth).
 
+# Repo root (one level up from this scripts/ dir), resolved at source time so
+# relative paths work regardless of the current working directory.
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+# Resolve a possibly-relative path against the repo root. Absolute paths are
+# returned unchanged. Lets a relative .env value (e.g. KEY_FILE=./walletKey.pem)
+# work no matter where the script is launched from.
+resolve_path() {
+  case "$1" in
+    /*) printf '%s\n' "$1" ;;
+    *)  printf '%s\n' "$REPO_ROOT/$1" ;;
+  esac
+}
+
 # Load KEY=VALUE settings from a .env file into the environment so the
 # documented "configure .env" workflow actually takes effect. Call this BEFORE
 # resolving `${VAR:-default}` config lines. `$HOME`-style values and `#` comment

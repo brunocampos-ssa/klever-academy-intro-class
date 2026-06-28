@@ -29,6 +29,10 @@ KEY_FILE="${KEY_FILE:-$KLEVER_SDK_PATH/walletKey.pem}"
 # The deployed contract address (klv1...). Placeholder — set CONTRACT_ADDRESS.
 CONTRACT_ADDRESS="${CONTRACT_ADDRESS:-klv1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq_REPLACE_ME}"
 
+# Resolve a relative KEY_FILE (e.g. ./walletKey.pem from .env) against the repo
+# root so the check works regardless of the current working directory.
+KEY_FILE="$(resolve_path "$KEY_FILE")"
+
 # Writing requires a signed transaction — both a wallet and a real contract.
 require_key_file "$KEY_FILE"
 require_contract_address "$CONTRACT_ADDRESS"

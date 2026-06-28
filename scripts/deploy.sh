@@ -35,6 +35,11 @@ KEY_FILE="${KEY_FILE:-$KLEVER_SDK_PATH/walletKey.pem}"
 
 CONTRACT_DIR="${CONTRACT_DIR:-contracts/certificate-registry}"
 
+# Resolve relative paths (e.g. KEY_FILE=./walletKey.pem from .env) against the
+# repo root so the script works regardless of the current working directory.
+KEY_FILE="$(resolve_path "$KEY_FILE")"
+CONTRACT_DIR="$(resolve_path "$CONTRACT_DIR")"
+
 # Fail early with a clear message if the wallet PEM is missing (koperator's own
 # error, "KeyLoaded not found", does not explain what to do).
 require_key_file "$KEY_FILE"
