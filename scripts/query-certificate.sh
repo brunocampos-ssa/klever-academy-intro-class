@@ -19,7 +19,7 @@ set -euo pipefail
 
 # Shared helpers + load config from .env (CONTRACT_ADDRESS, API_URL, ...).
 . "$(dirname "${BASH_SOURCE[0]}")/_common.sh"
-load_dotenv
+load_dotenv "$(dirname "${BASH_SOURCE[0]}")/../.env"
 
 # --- Configuration (from .env above, or environment, or these defaults) ------
 # API base for queries (note: this is the API host, not the node host).

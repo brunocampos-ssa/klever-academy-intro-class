@@ -66,8 +66,9 @@ if ! ls "$CONTRACT_DIR"/output/*.wasm >/dev/null 2>&1; then
   elif echo "$installed_targets" | grep -qx "wasm32-unknown-unknown"; then
     WASM_TARGET="wasm32-unknown-unknown"
   else
-    echo "ERROR: no wasm target installed. Run:"
-    echo "  rustup target add wasm32-unknown-unknown"
+    echo "ERROR: no wasm target installed. Install one of:"
+    echo "  rustup target add wasm32v1-none            # preferred (ksc default toolchain)"
+    echo "  rustup target add wasm32-unknown-unknown   # fallback"
     exit 1
   fi
   echo "    target: $WASM_TARGET"

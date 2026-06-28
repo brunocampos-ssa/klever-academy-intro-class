@@ -14,7 +14,7 @@
 # Load KEY=VALUE settings from a .env file into the environment so the
 # documented "configure .env" workflow actually takes effect. Call this BEFORE
 # resolving `${VAR:-default}` config lines. `$HOME`-style values and `#` comment
-# lines are handled (the file is sourced).
+# lines are handled (the file is parsed line-by-line, not executed).
 #
 # Precedence: explicit environment variables WIN over .env. So
 # `KLEVER_NODE=... ./scripts/deploy.sh` is never silently overridden by .env —

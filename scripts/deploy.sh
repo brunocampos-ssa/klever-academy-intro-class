@@ -17,7 +17,7 @@ set -euo pipefail
 
 # Shared helpers + load config from .env (KEY_FILE, KLEVER_NODE, ...).
 . "$(dirname "${BASH_SOURCE[0]}")/_common.sh"
-load_dotenv
+load_dotenv "$(dirname "${BASH_SOURCE[0]}")/../.env"
 
 # --- Configuration (from .env above, or environment, or these defaults) ------
 KLEVER_SDK_PATH="${KLEVER_SDK_PATH:-$HOME/klever-sdk}"
