@@ -37,8 +37,9 @@ if [ -z "$ID" ]; then
   exit 1
 fi
 
-# Klever VM expects arguments hex-encoded. Encode the u64 id as 16 hex chars.
-ID_HEX="$(printf '%016x' "$ID")"
+# The /sc/query API expects each argument BASE64-encoded (not hex). Encode the
+# u64 id with the shared helper (8-byte big-endian -> base64).
+ID_ARG="$(sc_arg_u64 "$ID")"
 
 echo "==> Querying certificate id=$ID on $API_URL"
 
@@ -46,7 +47,7 @@ query() {
   local func="$1"
   curl -s -X POST "$API_URL/v1.0/sc/query" \
     -H "Content-Type: application/json" \
-    -d "{\"ScAddress\":\"$CONTRACT_ADDRESS\",\"FuncName\":\"$func\",\"Arguments\":[\"$ID_HEX\"]}"
+    -d "{\"ScAddress\":\"$CONTRACT_ADDRESS\",\"FuncName\":\"$func\",\"Arguments\":[\"$ID_ARG\"]}"
 }
 
 echo "--- isValid ---"

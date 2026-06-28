@@ -53,6 +53,18 @@ require_key_file() {
   exit 1
 }
 
+# Encode a u64 as a Klever VM `/sc/query` argument. The query API expects each
+# argument as BASE64-encoded bytes (NOT hex). We encode the id as 8-byte
+# big-endian and base64 it (the VM top-decodes it back into a u64).
+#   sc_arg_u64 1  ->  AAAAAAAAAAE=
+sc_arg_u64() {
+  local hex esc
+  hex="$(printf '%016x' "$1")"
+  esc="$(printf '%s' "$hex" | sed 's/../\\x&/g')"
+  # shellcheck disable=SC2059  # $esc is a controlled \xNN byte string used as the format
+  printf "$esc" | base64
+}
+
 # Abort if the contract address is still the placeholder or empty.
 require_contract_address() {
   local addr="$1"
