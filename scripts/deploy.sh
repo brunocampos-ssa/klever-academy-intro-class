@@ -50,8 +50,13 @@ echo "==> Building before deploy..."
 CONTRACT_DIR="$CONTRACT_DIR" KLEVER_SDK_PATH="$KLEVER_SDK_PATH" KSC_BIN="$KSC_BIN" \
   "$SCRIPT_DIR/build.sh"
 
-WASM_FILE="$(find "$CONTRACT_DIR/output" -name "*.wasm" | head -1)"
-if [ -z "$WASM_FILE" ]; then
+# Prefer the canonical artifact build.sh produces; fall back to a search only
+# if it's missing (avoids picking the wrong file when output/ has several).
+WASM_FILE="$CONTRACT_DIR/output/certificate-registry.wasm"
+if [ ! -f "$WASM_FILE" ]; then
+  WASM_FILE="$(find "$CONTRACT_DIR/output" -name '*.wasm' | head -1)"
+fi
+if [ -z "${WASM_FILE:-}" ] || [ ! -f "$WASM_FILE" ]; then
   echo "ERROR: No .wasm found after build. Re-read the build output above."
   exit 1
 fi

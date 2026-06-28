@@ -28,7 +28,7 @@ export const NETWORK = "testnet" as const;
 //    is an obvious placeholder so a missing value fails loudly instead of
 //    silently pointing at someone else's contract.
 export const CONTRACT_ADDRESS =
-  import.meta.env.VITE_CONTRACT_ADDRESS ??
+  import.meta.env.VITE_CONTRACT_ADDRESS?.trim() ||
   "klv1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq_REPLACE_ME";
 
 // 3) ABI — import the generated/reference ABI. After `ksc all build`, you can
