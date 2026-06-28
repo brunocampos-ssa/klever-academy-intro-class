@@ -40,6 +40,16 @@ if [ ! -x "$KSC_BIN" ]; then
   exit 1
 fi
 
+# Validate CONTRACT_DIR up front. The ksc step below runs in a subshell with
+# `|| true` so the fallback can take over on a link failure — but that also
+# swallows a failed `cd` into a bad/missing dir, which would otherwise surface
+# later as the misleading "ksc did not generate the wasm/ crate". Fail loudly here.
+if [ ! -d "$CONTRACT_DIR" ]; then
+  echo "ERROR: contract directory not found: $CONTRACT_DIR"
+  echo "Run from the repo root, or set CONTRACT_DIR. See docs/03-build-test-deploy.md."
+  exit 1
+fi
+
 # --- 1) Official build (also generates ABI + the wasm/ crate) ----------------
 # Start clean so the "did we produce a .wasm?" check below reflects THIS run and
 # never succeeds on a stale artifact from a previous build. Also drop the
