@@ -36,6 +36,13 @@ if [ -z "$ID" ]; then
   echo "Usage: $0 <certificate_id>"
   exit 1
 fi
+# The id must be a non-negative integer — sc_arg_u64 feeds it to `printf %x`,
+# which errors cryptically on anything else.
+case "$ID" in
+  *[!0-9]*|'')
+    echo "ERROR: certificate id must be a non-negative integer (got: $ID)" >&2
+    exit 1 ;;
+esac
 
 # The /sc/query API expects each argument BASE64-encoded (not hex). Encode the
 # u64 id with the shared helper (8-byte big-endian -> base64).

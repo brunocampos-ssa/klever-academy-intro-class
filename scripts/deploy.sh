@@ -54,7 +54,9 @@ CONTRACT_DIR="$CONTRACT_DIR" KLEVER_SDK_PATH="$KLEVER_SDK_PATH" KSC_BIN="$KSC_BI
 # if it's missing (avoids picking the wrong file when output/ has several).
 WASM_FILE="$CONTRACT_DIR/output/certificate-registry.wasm"
 if [ ! -f "$WASM_FILE" ]; then
-  WASM_FILE="$(find "$CONTRACT_DIR/output" -name '*.wasm' | head -1)"
+  # `-print -quit` (not `| head -1`) avoids find being killed by SIGPIPE under
+  # `set -o pipefail` when head closes the pipe early.
+  WASM_FILE="$(find "$CONTRACT_DIR/output" -name '*.wasm' -print -quit)"
 fi
 if [ -z "${WASM_FILE:-}" ] || [ ! -f "$WASM_FILE" ]; then
   echo "ERROR: No .wasm found after build. Re-read the build output above."

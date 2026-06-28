@@ -84,6 +84,17 @@ if ! ls "$CONTRACT_DIR"/output/*.wasm >/dev/null 2>&1; then
     exit 1
   fi
 
+  # The fallback relinks the crate with cargo/rustup. Check they exist so a
+  # missing rustup reports the real problem instead of the misleading
+  # "no wasm target installed" below.
+  for tool in cargo rustup; do
+    if ! command -v "$tool" >/dev/null 2>&1; then
+      echo "ERROR: '$tool' not found on PATH — required by the wasm-build fallback."
+      echo "Install the Rust toolchain: https://rustup.rs (see docs/01-setup.md)."
+      exit 1
+    fi
+  done
+
   # Pick a wasm target the toolchain actually has installed.
   installed_targets="$(rustup target list --installed 2>/dev/null || true)"
   if echo "$installed_targets" | grep -qx "wasm32v1-none"; then
@@ -109,7 +120,10 @@ if ! ls "$CONTRACT_DIR"/output/*.wasm >/dev/null 2>&1; then
       && cargo build --manifest-path wasm/Cargo.toml --release \
            --target "$WASM_TARGET" --target-dir wasm/target )
 
-  built_wasm="$(find "$CONTRACT_DIR/wasm/target/$WASM_TARGET/release" -maxdepth 1 -name '*.wasm' | head -1)"
+  # `-print -quit` returns the first match without a pipe — avoids find being
+  # killed by SIGPIPE (exit 141) when `head` closes early, which `pipefail`
+  # would otherwise surface under `set -e`.
+  built_wasm="$(find "$CONTRACT_DIR/wasm/target/$WASM_TARGET/release" -maxdepth 1 -name '*.wasm' -print -quit)"
   if [ -z "$built_wasm" ]; then
     echo "ERROR: fallback build did not produce a .wasm."
     exit 1

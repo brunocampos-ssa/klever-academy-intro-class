@@ -42,6 +42,14 @@ if [ -z "$STUDENT" ]; then
   echo "Usage: $0 <student_klv_address> \"<course>\" \"<metadata_uri>\""
   exit 1
 fi
+# Light sanity check so an obvious mistake fails here with a clear message
+# rather than as a cryptic koperator decode error. (Not full bech32 validation.)
+case "$STUDENT" in
+  klv1*) ;;
+  *)
+    echo "ERROR: student address should be a Klever address starting with 'klv1' (got: $STUDENT)" >&2
+    exit 1 ;;
+esac
 
 echo "==> Issuing certificate"
 echo "    Contract: $CONTRACT_ADDRESS"
