@@ -140,13 +140,42 @@ export const CONTRACT_ADDRESS = "klv1seu_endereco_do_contrato...";
 
 ## Verifique o deploy
 
-Consulte uma view gratuita — se o contrato responder, está no ar:
+Um contrato recém-publicado está **vazio**, então consultar antes de emitir não
+retorna nada útil. Faça o ciclo completo: **emita um certificado e depois leia de
+volta.**
+
+Primeiro, diga aos scripts com qual contrato falar — defina `CONTRACT_ADDRESS` no
+`.env` (recomendado) ou passe inline em cada comando:
 
 ```bash
-CONTRACT_ADDRESS=klv1... ./scripts/query-certificate.sh 1
+# .env  (carregado automaticamente pelos scripts)
+CONTRACT_ADDRESS=klv1seu_endereco_do_contrato...
 ```
 
-Ou veja no explorer:
+**1) Emita um certificado** — uma escrita, então precisa da carteira emissora.
+Quem fez o deploy é o emissor (veja o `init`), então use o mesmo `KEY_FILE` do
+deploy:
+
+```bash
+./scripts/issue-certificate.sh klv1endereco_do_aluno... "Klever Academy Intro Class" "ipfs://cid"
+```
+
+O `returnData` do resultado é o **id** do novo certificado (o primeiro é `1`).
+
+**2) Consulte de volta** — uma leitura gratuita, sem carteira:
+
+```bash
+./scripts/query-certificate.sh 1
+```
+
+O `isValid` deve retornar `true` e o `getCertificate` deve retornar os campos
+guardados. Se os dois responderem, seu contrato está no ar e funcionando.
+
+> Os scripts leem `CONTRACT_ADDRESS` (e `KEY_FILE`, `KLEVER_NODE`) do `.env`.
+> Uma variável de ambiente inline (ex.: `CONTRACT_ADDRESS=klv1... ./scripts/...`)
+> tem precedência sobre o `.env` naquela execução.
+
+Você também pode ver no explorer:
 
 - Testnet: `https://testnet.kleverscan.org/smart-contract/<endereco_do_contrato>`
 
