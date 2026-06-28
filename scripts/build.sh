@@ -42,8 +42,12 @@ fi
 
 # --- 1) Official build (also generates ABI + the wasm/ crate) ----------------
 # Start clean so the "did we produce a .wasm?" check below reflects THIS run and
-# never succeeds on a stale artifact from a previous build.
-rm -f "$CONTRACT_DIR"/output/*.wasm 2>/dev/null || true
+# never succeeds on a stale artifact from a previous build. Also drop the
+# generated wasm/ crate and stale ABI so the fallback can't relink a stale crate
+# from an earlier run (ksc regenerates both; the wasm/Cargo.toml guard below then
+# fails loudly if ksc didn't regenerate it).
+rm -f "$CONTRACT_DIR"/output/*.wasm "$CONTRACT_DIR"/output/*.abi.json 2>/dev/null || true
+rm -rf "$CONTRACT_DIR/wasm" 2>/dev/null || true
 
 # `ksc all build` is the CORRECT Klever build command. We tolerate a nonzero
 # exit here so the fallback below can take over if only the wasm LINK failed.

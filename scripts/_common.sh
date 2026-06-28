@@ -29,7 +29,7 @@ load_dotenv() {
     case "$line" in ''|'#'*) continue ;; esac      # skip blanks and comments
     case "$line" in *=*) ;; *) continue ;; esac    # require KEY=VALUE
     key="${line%%=*}"
-    case "$key" in ''|*[!A-Za-z0-9_]*) continue ;; esac   # valid var name only
+    case "$key" in ''|[0-9]*|*[!A-Za-z0-9_]*) continue ;; esac   # valid shell identifier only
     [ -n "${!key+x}" ] && continue                 # already set? environment wins
     val="${line#*=}"                               # value = everything after first =
     case "$val" in                                 # strip one pair of surrounding quotes
